@@ -1,15 +1,13 @@
-FROM ubuntu:24.04
+FROM node:20-alpine
 
-# 安装 Squid 与密码文件工具，构建一个最小可部署的 HTTP 代理服务。
-RUN apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y squid apache2-utils \
-  && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
 
-COPY squid.conf /etc/squid/squid.conf
-COPY start.sh /start.sh
+COPY package.json ./
+RUN npm install --omit=dev
 
-RUN chmod +x /start.sh
+COPY server.js ./
 
-EXPOSE 3128
+ENV NODE_ENV=production
+EXPOSE 3000
 
-CMD ["/start.sh"]
+CMD ["node", "server.js"]
