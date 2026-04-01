@@ -10,6 +10,7 @@ set -euo pipefail
 PASSWD_FILE="/etc/squid/passwd"
 ALLOW_FILE="/tmp/squid-allow.conf"
 OUTPUT_CONF="/tmp/squid.conf"
+LISTEN_PORT="${RAILWAY_TCP_APPLICATION_PORT:-${PORT:-3128}}"
 
 htpasswd -bc "$PASSWD_FILE" "$PROXY_USER" "$PROXY_PASS"
 
@@ -36,6 +37,6 @@ awk -v allow_file="$ALLOW_FILE" '
     next
   }
   { print }
-' /etc/squid/squid.conf > "$OUTPUT_CONF"
+' /etc/squid/squid.conf | sed "s/__LISTEN_PORT__/${LISTEN_PORT}/g" > "$OUTPUT_CONF"
 
 exec squid -N -f "$OUTPUT_CONF"
