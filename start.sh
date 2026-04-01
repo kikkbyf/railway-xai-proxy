@@ -27,6 +27,15 @@ if [ ! -s "$ALLOW_FILE" ]; then
   exit 1
 fi
 
-sed "s|__ALLOW_RULES__|$(sed ':a;N;$!ba;s/\n/\\n/g' "$ALLOW_FILE")|g" /etc/squid/squid.conf > "$OUTPUT_CONF"
+awk -v allow_file="$ALLOW_FILE" '
+  /^# __ALLOW_RULES__$/ {
+    while ((getline line < allow_file) > 0) {
+      print line
+    }
+    close(allow_file)
+    next
+  }
+  { print }
+' /etc/squid/squid.conf > "$OUTPUT_CONF"
 
 exec squid -N -f "$OUTPUT_CONF"
